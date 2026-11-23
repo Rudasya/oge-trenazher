@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажёр по ОГЭ по информатике</title>
+<style>
+  :root{
+    --bg:#0f1420;
+    --panel:#181f30;
+    --panel2:#202940;
+    --line:#2c3856;
+    --text:#e8edf7;
+    --muted:#94a0bd;
+    --accent:#4c8dff;
+    --accent2:#38c98b;
+    --danger:#ff5c6c;
+    --warn:#ffb454;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Segoe UI", system-ui, -apple-system, sans-serif;
+    background:radial-gradient(1200px 600px at 80% -10%, #1c2740 0%, var(--bg) 55%);
+    color:var(--text);
+    min-height:100vh;
+    line-height:1.5;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:24px 16px 60px}
+  header{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+  .logo{
+    width:44px;height:44px;border-radius:12px;flex:none;
+    display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),#7b5cff);
+    font-weight:800;font-size:20px;color:#fff;box-shadow:0 6px 18px rgba(76,141,255,.35);
+  }
+  header h1{font-size:20px;margin:0;font-weight:700}
+  header p{margin:2px 0 0;color:var(--muted);font-size:13px}
+  .card{
+    background:var(--panel);border:1px solid var(--line);
+    border-radius:var(--radius);padding:20px;
+  }
+  .tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+  .tab{
+    padding:8px 14px;border-radius:999px;border:1px solid var(--line);
+    background:transparent;color:var(--muted);cursor:pointer;font:inherit;font-size:13px;
+  }
+  .tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  .tab-count{font-size:12px;opacity:.8;margin-left:4px}
+  .start-btn{
+    width:100%;padding:15px;font-size:17px;font-weight:700;color:#fff;cursor:pointer;
+    background:linear-gradient(135deg,var(--accent),#7b5cff);border:none;border-radius:12px;
+    transition:filter .15s, transform .1s;
+  }
+  .start-btn:hover{filter:brightness(1.08)}
+  .start-btn:active{transform:translateY(1px)}
+  .legend{color:var(--muted);font-size:13px;margin-top:16px;text-align:center}
+  .qr-block{
+    margin-top:20px;padding-top:18px;border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;gap:14px;text-align:left;
+  }
+  .qr-wrap{
+    width:132px;height:132px;padding:8px;border-radius:12px;background:#fff;
+    display:grid;place-items:center;flex:none;
+  }
+  .qr-wrap canvas,.qr-wrap img{width:116px!important;height:116px!important}
+  .qr-info{max-width:260px}
+  .qr-info strong{display:block;font-size:14px;margin-bottom:4px}
+  .qr-info span{display:block;color:var(--muted);font-size:12px;overflow-wrap:anywhere}
+  @media (max-width:480px){
+    .qr-block{flex-direction:column;text-align:center}
+  }
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+  .progress{flex:1;min-width:140px}
+  .bar{height:8px;background:var(--panel2);border-radius:99px;overflow:hidden}
+  .bar > span{display:block;height:100%;background:var(--accent);width:0%;transition:width .25s}
+  .q-label{font-size:12px;color:var(--muted);margin-top:6px}
+  .timer{font-variant-numeric:tabular-nums;font-weight:700;background:var(--panel2);padding:8px 14px;border-radius:10px;font-size:15px}
+  .timer.warn{color:var(--warn)}
+  .q-title{font-size:20px;font-weight:700;margin:0 0 6px}
+  .q-meta{color:var(--accent2);font-size:13px;font-weight:600;margin-bottom:14px}
+  .q-text{background:var(--panel2);border-radius:12px;padding:16px;margin-bottom:16px;white-space:pre-wrap;font-size:16px}
+  .options{display:flex;flex-direction:column;gap:10px}
+  .opt{
+    text-align:left;padding:14px 16px;border-radius:12px;font:inherit;cursor:pointer;color:var(--text);
+    background:var(--panel2);border:2px solid var(--line);transition:border-color .12s, background .12s;
+  }
+  .opt:hover:not(:disabled){border-color:var(--accent)}
+  .opt:disabled{cursor:default;opacity:.9}
+  .opt.correct{border-color:var(--accent2);background:rgba(56,201,139,.14)}
+  .opt.wrong{border-color:var(--danger);background:rgba(255,92,108,.14)}
+  .opt .mark{font-weight:800;margin-right:10px}
+  .explain{border-radius:12px;padding:14px 16px;margin-top:14px;font-size:15px;display:none}
+  .explain.show{display:block}
+  .explain.good{background:rgba(56,201,139,.12);border:1px solid rgba(56,201,139,.4)}
+  .explain.good .head{color:var(--accent2)}
+  .explain.bad{background:rgba(255,92,108,.10);border:1px solid rgba(255,92,108,.35)}
+  .explain.bad .head{color:var(--danger)}
+  .explain .head{font-weight:700;margin-bottom:6px}
+  .nav{display:flex;gap:10px;margin-top:18px}
+  .nav button{
+    flex:1;padding:13px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font:inherit;
+  }
+  .next-btn{background:var(--accent);border:none;color:#fff}
+  .next-btn:hover{filter:brightness(1.08)}
+  .review-btn{background:transparent;border:1px solid var(--line);color:var(--muted)}
+  .res-score{text-align:center;padding:26px 16px}
+  .big-num{font-size:64px;font-weight:800;line-height:1;background:linear-gradient(135deg,var(--accent),#7b5cff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .res-vs{color:var(--muted);font-size:16px}
+  .verdict{font-size:18px;font-weight:700;margin-top:10px}
+  .res-hint{color:var(--muted);font-size:14px;margin-top:6px}
+  .stat-row{display:flex;gap:10px;margin:20px 0}
+  .stat{flex:1;background:var(--panel2);border-radius:12px;padding:12px;text-align:center}
+  .stat b{display:block;font-size:22px}
+  .stat span{color:var(--muted);font-size:12px}
+  .stat.g b{color:var(--accent2)}
+  .stat.r b{color:var(--danger)}
+  .restart-btn{
+    width:100%;padding:14px;font-size:16px;font-weight:700;cursor:pointer;font:inherit;
+    background:var(--accent);border:none;border-radius:12px;color:#fff;
+  }
+  .restart-btn:hover{filter:brightness(1.08)}
+  .hidden{display:none !important}
+  @media (max-width:480px){
+    .q-title{font-size:18px}
+    .big-num{font-size:52px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">И</div>
+    <div>
+      <h1>Тренажёр по ОГЭ по информатике</h1>
+      <p>Подготовка к экзамену · 9 класс</p>
+    </div>
+  </header>
+
+  <!-- Start screen -->
+  <section class="card" id="menu">
+    <div class="tabs" id="tabs"></div>
+    <p id="tab-desc" style="color:var(--muted);font-size:14px;margin:0 0 18px"></p>
+    <button class="start-btn" id="startBtn">Начать тренировку</button>
+    <p class="legend">Всего вопросов: <span id="totalCount"></span> · после ответа — сразу разбор.</p>
+    <div class="qr-block">
+      <div class="qr-wrap" id="qrCode" aria-label="QR-код со ссылкой на тренажёр"></div>
+      <div class="qr-info">
+        <strong>Поделиться тренажёром</strong>
+        <span id="qrUrl"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quiz screen -->
+  <section class="card hidden" id="quiz">
+    <div class="topbar">
+      <div class="progress">
+        <div class="bar"><span id="barFill"></span></div>
+        <div class="q-label" id="qLabel">Вопрос 1 из 1</div>
+      </div>
+      <div class="timer" id="timer">00:00</div>
+    </div>
+    <h2 class="q-title" id="qTitle"></h2>
+    <div class="q-meta" id="qTopic"></div>
+    <div class="q-text" id="qText"></div>
+    <div class="options" id="options"></div>
+    <div class="explain" id="explain">
+      <div class="head" id="explainHead"></div>
+      <div id="explainBody"></div>
+    </div>
+    <div class="nav">
+      <button class="review-btn" id="reviewBtn" style="display:none">Завершить и посмотреть результат</button>
+      <button class="next-btn" id="nextBtn" style="display:none">Следующий вопрос →</button>
+    </div>
+  </section>
+
+  <!-- Result screen -->
+  <section class="card hidden" id="result">
+    <div class="res-score">
+      <div class="big-num" id="scoreNum">0</div>
+      <div class="res-vs">из <span id="scoreTotal">0</span> баллов</div>
+      <div class="verdict" id="verdict"></div>
+      <div class="res-hint" id="resHint"></div>
+    </div>
+    <div class="stat-row">
+      <div class="stat g"><b id="statGood">0</b><span>верных ответов</span></div>
+      <div class="stat r"><b id="statBad">0</b><span>ошибок</span></div>
+      <div class="stat"><b id="statTime">0</b><span>сек</span></div>
+    </div>
+    <button class="restart-btn" id="againBtn">Пройти ещё раз</button>
+  </section>
+</div>
+
+<script src="./qrcode.min.js"></script>
+<script>
+"use strict";
+
+const QUESTIONS = {
+  "Кодирование информации": [
+    {
+      text: "Текст набран на компьютере. Каждый символ кодируется 16 битами. Оцените информационный объём фразы из 40 символов.",
+      options: ["40 байт", "80 байт", "5 байт", "640 байт"],
+      answer: 1,
+      explain: "16 бит = 2 байта на символ. 40 символов × 2 байта = 80 байт. Формула: I = K × i."
+    },
+    {
+      text: "Сколько бит содержит один байт?",
+      options: ["16", "2", "8", "1010"],
+      answer: 2,
+      explain: "1 байт = 8 бит. Это базовое соотношение единиц измерения информации."
+    },
+    {
+      text: "Какой объём памяти (в байтах) займут 8 символов, если каждый символ кодируется одним байтом?",
+      options: ["8 байт", "64 байт", "16 байт", "4 байта"],
+      answer: 0,
+      explain: "8 символов × 1 байт = 8 байт. В кодировке ASCII/KOI-8 каждый символ занимает 1 байт."
+    },
+    {
+      text: "Сколько бит нужно для хранения одного символа в кодировке ASCII (первоначальная, 1 байт на символ)?",
+      options: ["1 бит", "8 бит", "16 бит", "32 бит"],
+      answer: 1,
+      explain: "1 символ = 1 байт = 8 бит."
+    },
+    {
+      text: "Сколько бит содержится в 1 килобайте?",
+      options: ["1000", "1024", "8192", "8000"],
+      answer: 2,
+      explain: "1 Кбайт = 1024 байт. 1024 × 8 бит = 8192 бита."
+    },
+    {
+      text: "Слово «ПРИВЕТ» (6 символов) в кодировке Unicode (16 бит на символ) займёт объём:",
+      options: ["6 байт", "12 байт", "96 байт", "24 байта"],
+      answer: 1,
+      explain: "6 символов × 16 бит = 96 бит. 96 бит ÷ 8 = 12 байт."
+    },
+    {
+      text: "Сколько Кбайт в одном мегабайте?",
+      options: ["1000", "1024", "10", "8192"],
+      answer: 1,
+      explain: "1 Мбайт = 1024 Кбайт = 1 048 576 байт."
+    },
+    {
+      text: "Сколько символов содержится в сообщении объёмом 20 байт, если каждый символ кодируется 1 байтом?",
+      options: ["20", "40", "10", "160"],
+      answer: 0,
+      explain: "20 байт ÷ 1 байт/символ = 20 символов."
+    },
+    {
+      text: "Какая из единиц измерения информации является наименьшей?",
+      options: ["бит", "байт", "Кбайт", "Мбайт"],
+      answer: 0,
+      explain: "Бит — самая маленькая единица. Байт = 8 бит, дальше по возрастанию Кбайт, Мбайт и т.д."
+    }
+  ],
+  "Системы счисления": [
+    {
+      text: "Переведите двоичное число 1011₂ в десятичную систему счисления.",
+      options: ["11", "12", "9", "13"],
+      answer: 0,
+      explain: "1011₂ = 1×2³ + 0×2² + 1×2¹ + 1×2⁰ = 8 + 0 + 2 + 1 = 11."
+    },
+    {
+      text: "Сколько единиц содержится в двоичной записи числа 13?",
+      options: ["2", "3", "4", "1"],
+      answer: 1,
+      explain: "13₁₀ = 1101₂. В записи 1101 три единицы.",
+      note: "13÷2=6 (ост 1), 6÷2=3 (ост 0), 3÷2=1 (ост 1), 1÷2=0 (ост 1) → читаем снизу вверх: 1101."
+    },
+    {
+      text: "Какое число записано в двоичной системе: 1001₂?",
+      options: ["9", "10", "8", "7"],
+      answer: 0,
+      explain: "1001₂ = 1×2³ + 0×2² + 0×2¹ + 1×2⁰ = 8 + 1 = 9."
+    },
+    {
+      text: "Переведите число 7 из десятичной системы в двоичную.",
+      options: ["101", "111", "110", "1001"],
+      answer: 1,
+      explain: "7₁₀ = 111₂. 7 = 4 + 2 + 1 = 1×2² + 1×2¹ + 1×2⁰."
+    },
+    {
+      text: "Сколько цифр используется в двоичной системе счисления?",
+      options: ["1", "2", "8", "10"],
+      answer: 1,
+      explain: "В двоичной системе только 2 цифры: 0 и 1."
+    },
+    {
+      text: "Переведите двоичное число 110₂ в десятичную систему.",
+      options: ["5", "6", "7", "4"],
+      answer: 1,
+      explain: "110₂ = 1×4 + 1×2 + 0×1 = 4 + 2 + 0 = 6."
+    },
+    {
+      text: "Какое основание у двоичной системы счисления?",
+      options: ["2", "8", "10", "16"],
+      answer: 0,
+      explain: "Основание двоичной системы — 2 (цифры 0 и 1)."
+    },
+    {
+      text: "Переведите двоичное число 1000₂ в десятичную систему.",
+      options: ["4", "7", "9", "8"],
+      answer: 3,
+      explain: "1000₂ = 1×2³ = 8."
+    },
+    {
+      text: "Число 15 в двоичной системе счисления записывается как:",
+      options: ["1010", "1110", "1101", "1111"],
+      answer: 3,
+      explain: "15 = 8 + 4 + 2 + 1 → 1111₂."
+    }
+  ],
+  "Логика": [
+    {
+      text: "Дано выражение: НЕ (A ИЛИ B). Определите его значение, если A = 1, B = 0.",
+      options: ["1", "0", "нельзя определить"],
+      answer: 1,
+      explain: "A ИЛИ B = 1 ИЛИ 0 = 1. НЕ 1 = 0. Результат — 0.",
+      note: "ИЛИ (OR) возвращает 1, если есть хотя бы одна единица."
+    },
+    {
+      text: "Какая операция возвращает 1 только тогда, когда оба аргумента равны 1?",
+      options: ["ИЛИ (OR)", "И (AND)", "НЕ (NOT)", "сложение"],
+      answer: 1,
+      explain: "Логическое И (AND) даёт 1 только при обоих единицах: 1 И 0 = 0, а 1 И 1 = 1."
+    },
+    {
+      text: "Сколько существует строк истинности у выражения с двумя логическими переменными?",
+      options: ["2", "3", "4", "8"],
+      answer: 2,
+      explain: "Для n переменных строк истинности равно 2ⁿ. Для двух: 2² = 4 строки (00, 01, 10, 11)."
+    },
+    {
+      text: "Чему равно НЕ (НЕ A), если A = 1?",
+      options: ["1", "0", "нельзя определить"],
+      answer: 0,
+      explain: "Двойное отрицание не меняет значение: НЕ (НЕ 1) = НЕ 0 = 1."
+    },
+    {
+      text: "Чему равно A И B, если A = 1, B = 1?",
+      options: ["1", "0"],
+      answer: 0,
+      explain: "Логическое И даёт 1 только при обоих единицах: 1 И 1 = 1."
+    },
+    {
+      text: "Чему равно A ИЛИ B, если A = 0, B = 0?",
+      options: ["1", "0"],
+      answer: 1,
+      explain: "ИЛИ возвращает 0 только тогда, когда оба аргумента равны 0."
+    },
+    {
+      text: "Какая операция возвращает 1, если хотя бы один из аргументов равен 1?",
+      options: ["ИЛИ (OR)", "И (AND)", "НЕ (NOT)"],
+      answer: 0,
+      explain: "ИЛИ (OR) даёт 1, если есть хотя бы одна единица среди аргументов."
+    },
+    {
+      text: "Сколько строк истинности у выражения с тремя логическими переменными?",
+      options: ["3", "6", "8", "9"],
+      answer: 2,
+      explain: "Для n переменных — 2ⁿ строк. Для трёх: 2³ = 8 строк."
+    },
+    {
+      text: "Чему равно НЕ (0)?",
+      options: ["1", "0"],
+      answer: 0,
+      explain: "Отрицание (НЕ) инвертирует значение: НЕ 0 = 1."
+    }
+  ],
+  "Алгоритмы": [
+    {
+      text: "Что выведет алгоритм?\nЕСЛИ a > b, ТО вывести a, ИНАЧЕ вывести b",
+      options: ["наибольшее из чисел", "наименьшее из чисел", "среднее", "сумму"],
+      answer: 0,
+      explain: "Условие a > b выбирает большее число. Значит, алгоритм находит максимум из двух чисел."
+    },
+    {
+      text: "Алгоритм выполняет: b = b + 1. После 10 повторений этого действия b станет больше начального на…",
+      options: ["1", "10", "b", "20"],
+      answer: 1,
+      explain: "Каждое повторение увеличивает b на 1. За 10 повторений значение вырастет на 10."
+    },
+    {
+      text: "Цикл «ПОКА n > 0» при n, изначально равном 0, выполнится…",
+      options: ["ни разу", "один раз", "бесконечно"],
+      answer: 0,
+      explain: "Условие n > 0 сразу ложно, поэтому тело цикла не выполнится ни разу. Это цикл с предусловием."
+    },
+    {
+      text: "Дан алгоритм: a = 1; повторить 3 раза: a = a * 2. Чему будет равно a?",
+      options: ["6", "7", "4", "8"],
+      answer: 3,
+      explain: "1 × 2 × 2 × 2 = 8. Каждое повторение удваивает значение."
+    },
+    {
+      text: "В блок-схеме фигура «ромб» обозначает…",
+      options: ["начало", "проверку условия", "ввод данных", "вывод результата"],
+      answer: 1,
+      explain: "Ромб в блок-схеме — это блок проверки условия (логическое ветвление)."
+    },
+    {
+      text: "Цикл «for i in range(1, 6)» выполнит тело цикла…",
+      options: ["6 раз", "5 раз", "4 раза", "не выполнит"],
+      answer: 1,
+      explain: "range(1, 6) даёт значения 1, 2, 3, 4, 5 — всего 5 итераций (конечное значение не включается)."
+    },
+    {
+      text: "Линейный алгоритм — это алгоритм, в котором команды…",
+      options: ["выполняются строго по порядку", "выполняются в случайном порядке", "могут повторяться", "выбираются по условию"],
+      answer: 0,
+      explain: "Линейный алгоритм выполняется один раз и строго по порядку записи команд."
+    },
+    {
+      text: "Алгоритм: ЕСЛИ a >= 60, ТО «Сдал», ИНАЧЕ «Не сдал». Что выведет алгоритм при a = 80?",
+      options: ["Сдал", "Не сдал"],
+      answer: 0,
+      explain: "80 >= 60 — условие истинно, выводится «Сдал»."
+    },
+    {
+      text: "Для чего в алгоритме используется переменная?",
+      options: ["для вывода текста", "для создания цикла", "для хранения значения", "для оформления"],
+      answer: 2,
+      explain: "Переменная — это именованная область памяти для хранения значения, которое алгоритм обрабатывает."
+    }
+  ],
+  "Таблицы и базы данных": [
+    {
+      text: "В электронной таблице записана формула =A1+B1*2. Если A1=3, B1=4, какое значение она вернёт?",
+      options: ["14", "11", "24", "10"],
+      answer: 1,
+      explain: "Сначала умножаем: B1*2 = 4*2 = 8. Затем складываем: A1 + 8 = 3 + 8 = 11."
+    },
+    {
+      text: "Что делает операция «сортировка» над таблицей?",
+      options: ["располагает записи в заданном порядке", "удаляет повторяющиеся записи", "меняет тип данных столбца", "скрывает строки"],
+      answer: 0,
+      explain: "Сортировка упорядочивает записи по выбранному полю (по возрастанию или убыванию)."
+    },
+    {
+      text: "Формула в электронной таблице всегда начинается со знака…",
+      options: ["=", "+", "#", "&"],
+      answer: 0,
+      explain: "Любая формула в Excel вводится со знака «=», например =A1+B1."
+    },
+    {
+      text: "Чему равен результат формулы =СРЗНАЧ(2; 4; 6)?",
+      options: ["2", "3", "4", "6"],
+      answer: 2,
+      explain: "СРЗНАЧ — среднее арифметическое: (2 + 4 + 6) ÷ 3 = 4."
+    },
+    {
+      text: "=СУММ(A1:A3), если A1=1, A2=2, A3=3. Каков результат?",
+      options: ["3", "4", "5", "6"],
+      answer: 3,
+      explain: "СУММ складывает значения диапазона: 1 + 2 + 3 = 6."
+    },
+    {
+      text: "Выбор из таблицы только тех записей, которые удовлетворяют условию, называется…",
+      options: ["сортировкой", "фильтрацией", "вставкой", "удалением"],
+      answer: 1,
+      explain: "Фильтрация отображает только записи, соответствующие заданному условию."
+    },
+    {
+      text: "База данных — это…",
+      options: ["структурированное хранилище данных", "графический редактор", "программа для интернета", "текстовый файл"],
+      answer: 0,
+      explain: "База данных — это организованная совокупность данных, обычно представленных в виде таблиц."
+    },
+    {
+      text: "Зачем таблице в базе данных нужен первичный ключ?",
+      options: ["для уникальной идентификации каждой записи", "для сортировки по алфавиту", "для красивой шапки", "для расчёта сумм"],
+      answer: 0,
+      explain: "Первичный ключ — уникальный идентификатор, который отличает каждую запись от остальных."
+    }
+  ],
+  "Файлы и файловая система": [
+    {
+      text: "Расширение файла (например, .txt) указывает на…",
+      options: ["тип файла", "размер файла", "дату создания", "владельца"],
+      answer: 0,
+      explain: "Расширение — это часть имени после точки, указывающая на тип содержимого файла."
+    },
+    {
+      text: "Какое расширение обычно имеют текстовые документы?",
+      options: [".txt", ".jpg", ".exe", ".mp3"],
+      answer: 0,
+      explain: ".txt — текстовые файлы; .jpg — изображения; .exe — программы; .mp3 — музыка."
+    },
+    {
+      text: "Файлы на компьютере организованы в…",
+      options: ["строки", "папки (каталоги)", "окна", "таблицы"],
+      answer: 1,
+      explain: "Файлы хранятся в папках (каталогах), которые образуют файловую систему."
+    },
+    {
+      text: "В полном имени файла C:\\Уроки\\task.txt название самого файла — это…",
+      options: ["C:", "Уроки", "task", "task.txt"],
+      answer: 3,
+      explain: "Имя файла — последняя часть пути вместе с расширением: task.txt. С:\\Уроки — путь к папке."
+    },
+    {
+      text: "Операция «копирование» файла позволяет…",
+      options: ["создать копию файла в другом месте", "удалить файл", "переименовать файл", "изменить содержимое"],
+      answer: 0,
+      explain: "Копирование создаёт точную копию файла в указанном месте, исходный файл остаётся."
+    },
+    {
+      text: "Какое расширение обычно имеют графические изображения?",
+      options: [".doc", ".png", ".exe", ".txt"],
+      answer: 1,
+      explain: ".png и .jpg — форматы изображений; .doc — документ Word; .exe — программа."
+    },
+    {
+      text: "Ярлык (shortcut) — это…",
+      options: ["копия самого файла", "ссылка на объект", "сам файл", "новая папка"],
+      answer: 1,
+      explain: "Ярлык — это ссылка на файл или папку. Двойной клик по ярлыку открывает исходный объект."
+    }
+  ],
+  "Сети и Интернет": [
+    {
+      text: "IP-адрес — это…",
+      options: ["уникальный адрес устройства в сети", "пароль от компьютера", "адрес электронной почты", "номер телефона"],
+      answer: 0,
+      explain: "IP-адрес — уникальный числовой адрес устройства в компьютерной сети. Пример: 192.168.0.1."
+    },
+    {
+      text: "Браузер — это программа для…",
+      options: ["набора текста", "просмотра веб-сайтов", "рисования", "расчётов"],
+      answer: 1,
+      explain: "Браузер (Chrome, Firefox, Yandex) — программа для просмотра страниц в интернете."
+    },
+    {
+      text: "Гиперссылка позволяет…",
+      options: ["перейти на другую страницу или ресурс", "удалить страницу", "изменить шрифт", "загрузить вирус"],
+      answer: 0,
+      explain: "Гиперссылка — это связь между страницами, клик по ней переводит на другую страницу или файл."
+    },
+    {
+      text: "Домен .ru указывает, что сайт относится к…",
+      options: ["международным", "России", "рекламным", "закрытым"],
+      answer: 1,
+      explain: "Домен .ru — национальный домен России; .com — общий коммерческий, .org — организаций."
+    },
+    {
+      text: "Всемирная паутина (World Wide Web) — это…",
+      options: ["система связанных гиперссылками документов", "физическая сеть кабелей", "антивирус", "реферат в интернете"],
+      answer: 0,
+      explain: "WWW — это система связанных гиперссылками документов, доступных по адресам в интернете."
+    },
+    {
+      text: "Чтобы открыть сайт, в адресной строке браузера указывают…",
+      options: ["пароль", "URL-адрес", "MAC-адрес", "номер телефона"],
+      answer: 1,
+      explain: "URL (унифицированный адрес ресурса) — например, https://example.com."
+    },
+    {
+      text: "По какому протоколу передаются данные веб-сайтов?",
+      options: ["SMTP", "HTTP/HTTPS", "POP3", "FTP-only"],
+      answer: 1,
+      explain: "HTTP и его защищённая версия HTTPS используются для передачи веб-страниц."
+    }
+  ],
+  "Программирование на Python": [
+    {
+      text: "Какая команда выводит текст на экран в Python?",
+      options: ["input()", "len()", "print()", "int()"],
+      answer: 2,
+      explain: "print() выводит значения на экран. input() — ввод, len() — длина, int() — перевод в число."
+    },
+    {
+      text: "Переменная в программировании — это…",
+      options: ["место для хранения значения с именем", "кнопка на клавиатуре", "часть экрана", "вид цикла"],
+      answer: 0,
+      explain: "Переменная — именованная область памяти, в которой хранится значение (число, строка и т.д.)."
+    },
+    {
+      text: "Сколько раз выполнится тело цикла: for i in range(3)?",
+      options: ["2", "3", "4", "бесконечно"],
+      answer: 1,
+      explain: "range(3) даёт значения 0, 1, 2 — всего 3 итерации."
+    },
+    {
+      text: "Какой оператор в Python используется для условий?",
+      options: ["if", "for", "def", "print"],
+      answer: 0,
+      explain: "Условный оператор if задаёт выполнение кода при верном условии. for — цикл, def — функция."
+    },
+    {
+      text: "Что выведет команда print(2*3)?",
+      options: ["2*3", "23", "10", "6"],
+      answer: 3,
+      explain: "Python сначала вычислит выражение 2*3 = 6, затем выведет результат — число 6."
+    },
+    {
+      text: "Какой оператор сравнивает два значения на равенство в Python?",
+      options: ["=", "==", ":=", "=>"],
+      answer: 1,
+      explain: "В Python одинарное = означает присваивание, а двойное == — сравнение на равенство."
+    },
+    {
+      text: "Что произойдёт при выполнении: x = 0; print(10 / x)?",
+      options: ["вывод числа", "ошибка деления на ноль", "вывод None", "ничего"],
+      answer: 1,
+      explain: "Деление на ноль в Python вызывает ошибку ZeroDivisionError."
+    }
+  ]
+};
+
+const topicDescriptions = {
+  "Кодирование информации": "Расчёт объёма текста и единицы измерения информации.",
+  "Системы счисления": "Перевод чисел между двоичной и десятичной системами.",
+  "Логика": "Логические операции И, ИЛИ, НЕ и таблицы истинности.",
+  "Алгоритмы": "Алгоритмы, блок-схемы, циклы и разбор простых программ.",
+  "Таблицы и базы данных": "Формулы в электронных таблицах и работа с данными.",
+  "Файлы и файловая система": "Имена файлов, расширения, папки и операции с файлами.",
+  "Сети и Интернет": "Адреса, браузер, гиперссылки и протоколы.",
+  "Программирование на Python": "Основы языка Python: вывод, переменные, циклы, условия."
+};
+
+const VIEW = { show: (id) => { document.querySelectorAll("section").forEach(s => s.classList.add("hidden")); document.getElementById(id).classList.remove("hidden"); } };
+
+const menu = document.getElementById("menu");
+const quiz = document.getElementById("quiz");
+const result = document.getElementById("result");
+
+const tabsEl = document.getElementById("tabs");
+const tabDesc = document.getElementById("tab-desc");
+const startBtn = document.getElementById("startBtn");
+const qTitle = document.getElementById("qTitle");
+const qTopic = document.getElementById("qTopic");
+const qText = document.getElementById("qText");
+const optionsEl = document.getElementById("options");
+const explainEl = document.getElementById("explain");
+const explainHead = document.getElementById("explainHead");
+const explainBody = document.getElementById("explainBody");
+const nextBtn = document.getElementById("nextBtn");
+const reviewBtn = document.getElementById("reviewBtn");
+const barFill = document.getElementById("barFill");
+const qLabel = document.getElementById("qLabel");
+const timerEl = document.getElementById("timer");
+
+let allTopics = Object.keys(QUESTIONS);
+let activeTopic = null;
+let quizList = [];
+let idx = 0;
+let correct = 0;
+let timer = 0;
+let timerInterval = null;
+let answered = false;
+let currentObj = null;
+
+document.getElementById("totalCount").textContent =
+  Object.values(QUESTIONS).reduce((s, arr) => s + arr.length, 0);
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function renderTabs() {
+  tabsEl.innerHTML = "";
+  allTopics.forEach((t) => {
+    const btn = document.createElement("button");
+    btn.className = "tab" + (t === activeTopic ? " active" : "");
+    btn.innerHTML = t + ' <span class="tab-count">' + QUESTIONS[t].length + "</span>";
+    btn.onclick = () => { activeTopic = t; renderTabs(); };
+    tabsEl.appendChild(btn);
+  });
+  tabDesc.textContent = activeTopic ? (topicDescriptions[activeTopic] || "") : "Выберите тему из списка, чтобы тренироваться по ней.";
+}
+
+startBtn.onclick = () => {
+  if (!activeTopic) { startBtn.textContent = "Сначала выберите тему"; setTimeout(() => startBtn.textContent = "Начать тренировку", 1200); return; }
+  quizList = shuffle(QUESTIONS[activeTopic]);
+  idx = 0; correct = 0; timer = 0;
+  VIEW.show("quiz");
+  startTimer();
+  showQuestion();
+};
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => { timer++; renderTimer(); }, 1000);
+}
+
+function renderTimer() {
+  const m = String(Math.floor(timer / 60)).padStart(2, "0");
+  const s = String(timer % 60).padStart(2, "0");
+  timerEl.textContent = m + ":" + s;
+  timerEl.classList.toggle("warn", timer > 300);
+}
+
+function showQuestion() {
+  currentObj = quizList[idx];
+  answered = false;
+  qLabel.textContent = "Вопрос " + (idx + 1) + " из " + quizList.length;
+  barFill.style.width = ((idx) / quizList.length * 100) + "%";
+  qTitle.textContent = currentObj.text.split("\n")[0];
+  qTopic.textContent = activeTopic;
+  qText.textContent = currentObj.text;
+  explainEl.classList.remove("show", "good", "bad");
+  nextBtn.style.display = "none";
+  reviewBtn.style.display = "none";
+  renderOptions();
+}
+
+function renderOptions() {
+  optionsEl.innerHTML = "";
+  currentObj.options.forEach((opt, i) => {
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.innerHTML = '<span class="mark">' + String.fromCharCode(97 + i) + ")</span>" + opt;
+    b.onclick = () => select(i, b, currentObj);
+    optionsEl.appendChild(b);
+  });
+}
+
+function select(chosen, btn, item) {
+  if (answered) return;
+  answered = true;
+  const btns = optionsEl.querySelectorAll(".opt");
+  btns.forEach((b, i) => {
+    b.disabled = true;
+    if (i === item.answer) b.classList.add("correct");
+    if (i === chosen && i !== item.answer) b.classList.add("wrong");
+    b.onclick = null;
+  });
+  if (chosen === item.answer) {
+    correct++;
+    explainHead.textContent = "Верно!";
+    explainEl.classList.add("show", "good");
+  } else {
+    explainHead.textContent = "Неверно.";
+    explainEl.classList.add("show", "bad");
+  }
+  let bodyHtml = "<div>" + item.explain + "</div>";
+  if (item.note) bodyHtml += "<div style='margin-top:8px;color:var(--warn)'>" + item.note + "</div>";
+  explainBody.innerHTML = bodyHtml;
+  if (idx + 1 < quizList.length) {
+    nextBtn.style.display = "block";
+  } else {
+    reviewBtn.style.display = "block";
+  }
+}
+
+nextBtn.onclick = () => { idx++; showQuestion(); };
+reviewBtn.onclick = showResult;
+
+function showResult() {
+  clearInterval(timerInterval);
+  VIEW.show("result");
+  const total = quizList.length;
+  document.getElementById("scoreTotal").textContent = total;
+  document.getElementById("scoreNum").textContent = correct;
+  document.getElementById("statGood").textContent = correct;
+  document.getElementById("statBad").textContent = total - correct;
+  document.getElementById("statTime").textContent = timer;
+  const pct = total ? Math.round(correct / total * 100) : 0;
+  const verdict = document.getElementById("verdict");
+  const hint = document.getElementById("resHint");
+  verdict.textContent = total - correct === 0 ? "Отличный результат!" : (pct >= 60 ? "Хороший результат!" : "Стоит ещё потренироваться.");
+  const m = String(Math.floor(timer / 60)).padStart(2, "0");
+  const s = String(timer % 60).padStart(2, "0");
+  hint.textContent = pct >= 60 ? "Молодец! Открывайте новую тему или попробуйте пройти быстрее." : "Начните с темы «" + activeTopic + "» — изучите разбор, потом пройдите заново.";
+  document.getElementById("statTime").textContent = m + ":" + s;
+}
+
+document.getElementById("againBtn").onclick = () => { VIEW.show("menu"); renderTabs(); };
+
+function renderQrCode() {
+  const qrContainer = document.getElementById("qrCode");
+  const qrUrl = document.getElementById("qrUrl");
+  const currentUrl = window.location.href.split("#")[0];
+  const hostname = window.location.hostname;
+  const privateIp =
+    /^10\./.test(hostname) ||
+    /^172\.(1[6-9]|2\d|3[01])\./.test(hostname) ||
+    /^192\.168\./.test(hostname);
+  const isLocalUrl =
+    window.location.protocol === "file:" ||
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "::1" ||
+    hostname === "0.0.0.0" ||
+    privateIp ||
+    hostname.endsWith(".localhost");
+
+  if (isLocalUrl) {
+    qrContainer.textContent = "QR";
+    qrContainer.style.fontSize = "24px";
+    qrContainer.style.color = "#94a0bd";
+    qrUrl.textContent = "Откройте тренажёр по публичному адресу, чтобы QR работал";
+    return;
+  }
+
+  const link = document.createElement("a");
+  link.href = currentUrl;
+  link.textContent = currentUrl;
+  link.target = "_blank";
+  link.rel = "noopener";
+  link.style.color = "var(--accent)";
+  qrUrl.replaceChildren(link);
+
+  qrContainer.replaceChildren();
+  if (typeof QRCode === "undefined") {
+    qrContainer.textContent = "QR недоступен";
+    return;
+  }
+
+  new QRCode(qrContainer, {
+    text: currentUrl,
+    width: 116,
+    height: 116,
+    colorDark: "#0f1420",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.M
+  });
+}
+
+renderTabs();
+renderQrCode();
+</script>
+</body>
+</html>
